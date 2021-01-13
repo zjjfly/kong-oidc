@@ -41,7 +41,9 @@ function handle(oidcConfig)
     if response then
       utils.setCredentials(response)
       utils.injectGroups(response, oidcConfig.groups_claim)
-      utils.injectUser(response, oidcConfig.userinfo_header_name)
+      if not oidcConfig.disable_userinfo_header then
+        utils.injectUser(response, oidcConfig.userinfo_header_name)
+      end
       return
     end
   end
@@ -51,7 +53,9 @@ function handle(oidcConfig)
     if response then
       utils.setCredentials(response)
       utils.injectGroups(response, oidcConfig.groups_claim)
-      utils.injectUser(response, oidcConfig.userinfo_header_name)
+      if not oidcConfig.disable_userinfo_header then
+        utils.injectUser(response, oidcConfig.userinfo_header_name)
+      end
     end
   end
 
