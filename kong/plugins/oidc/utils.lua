@@ -72,7 +72,10 @@ function M.get_options(config, ngx)
     disable_id_token_header = config.disable_id_token_header == "yes",
     disable_access_token_header = config.disable_access_token_header == "yes",
     groups_claim = config.groups_claim,
-    skip_already_auth_requests = config.skip_already_auth_requests == "yes"
+    skip_already_auth_requests = config.skip_already_auth_requests == "yes",
+    bearer_jwt_auth_enable = config.bearer_jwt_auth_enable == "yes",
+    bearer_jwt_auth_allowed_auds = config.bearer_jwt_auth_allowed_auds,
+    bearer_jwt_auth_signing_algs = config.bearer_jwt_auth_signing_algs
   }
 end
 
@@ -167,6 +170,29 @@ function M.has_bearer_access_token()
     local divider = header:find(' ')
     if string.lower(header:sub(0, divider-1)) == string.lower("Bearer") then
       return true
+    end
+  end
+  return false
+end
+
+-- verify if tables t1 and t2 have at least one common string item
+-- instead of table, also string can be provided as t1 or t2
+function M.has_common_item(t1, t2)
+  if t1 == nil or t2 == nil then
+    return false
+  end
+  if type(t1) == "string" then
+    t1 = { t1 }
+  end
+  if type(t2) == "string" then
+    t2 = { t2 }
+  end
+  local i1, i2
+  for _, i1 in pairs(t1) do
+    for _, i2 in pairs(t2) do
+      if type(i1) == "string" and type(i2) == "string" and i1 == i2 then
+        return true
+      end
     end
   end
   return false

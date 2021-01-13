@@ -43,6 +43,12 @@ function MockableCase:setUp()
         clear_header = function(...) end,
         set_header = function(...) end
       }
+    },
+    log = {
+      err = function(...) end
+    },
+    ctx = {
+      shared = {}
     }
   }
   self.kong = _G.kong
