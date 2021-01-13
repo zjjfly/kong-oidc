@@ -34,5 +34,7 @@ return {
     bearer_jwt_auth_enable = { type = "string", required = false, default = "no" },
     bearer_jwt_auth_allowed_auds = { type = "array", required = false },
     bearer_jwt_auth_signing_algs = { type = "array", required = true, default = { "RS256" } },
+    header_names = { type = "array", required = true, default = {} },
+    header_claims = { type = "array", required = true, default = {} },
   }
 }

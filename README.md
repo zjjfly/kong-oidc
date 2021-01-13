@@ -103,6 +103,8 @@ If you're using `luarocks` execute the following:
 | `config.bearer_jwt_auth_enable`             | no                                         | false    | Authenticate based on JWT (ID) token provided in Authorization (Bearer) header. Checks iss, sub, aud, exp, iat (as in ID token). `config.discovery` must be defined to discover JWKS    |
 | `config.bearer_jwt_auth_allowed_auds`       |                                            | false    | List of JWT token `aud` values allowed when validating JWT token in Authorization header. If not provided, uses value from `config.client_id`                                           |
 | `config.bearer_jwt_auth_signing_algs`       | [ 'RS256' ]                                | false    | List of allowed signing algorithms for Authorization header JWT token validation. Must match to OIDC provider and `resty-openidc` supported algorithms                                  |
+| `config.header_names`                       |                                            | false    | List of custom upstream HTTP headers to be added based on claims. Must have same number of elements as `config.header_claims`. Example: `[ 'x-oidc-email', 'x-oidc-email-verified' ]`   |
+| `config.header_claims`                      |                                            | false    | List of claims to be used as source for custom upstream headers. Claims are sourced from Userinfo, ID Token, Bearer JWT, Introspection, depending on auth method.  Use only claims containing simple string values. Example: `[ 'email', 'email_verified'` |
 
 ### Enabling kong-oidc
 

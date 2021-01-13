@@ -75,7 +75,9 @@ function M.get_options(config, ngx)
     skip_already_auth_requests = config.skip_already_auth_requests == "yes",
     bearer_jwt_auth_enable = config.bearer_jwt_auth_enable == "yes",
     bearer_jwt_auth_allowed_auds = config.bearer_jwt_auth_allowed_auds,
-    bearer_jwt_auth_signing_algs = config.bearer_jwt_auth_signing_algs
+    bearer_jwt_auth_signing_algs = config.bearer_jwt_auth_signing_algs,
+    header_names = config.header_names or {},
+    header_claims = config.header_claims or {}
   }
 end
 
@@ -161,6 +163,27 @@ end
 function M.injectGroups(user, claim)
   if user[claim] ~= nil then
     kong.ctx.shared.authenticated_groups = user[claim]
+  end
+end
+
+function M.injectHeaders(header_names, header_claims, sources)
+  if #header_names ~= #header_claims then
+    kong.log.err('Different number of elements provided in header_names and header_claims. Headers will not be added.')
+    return
+  end
+  for i = 1, #header_names do
+    local header, claim
+    header = header_names[i]
+    claim = header_claims[i]
+    kong.service.request.clear_header(header)
+    for j = 1, #sources do
+      local source
+      source = sources[j]
+      if (source and source[claim]) then
+        kong.service.request.set_header(header, source[claim])
+        break
+      end
+    end
   end
 end
 
