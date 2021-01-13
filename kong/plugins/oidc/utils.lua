@@ -70,7 +70,7 @@ function M.get_options(config, ngx)
     disable_userinfo_header = config.disable_userinfo_header == "yes",
     disable_id_token_header = config.disable_id_token_header == "yes",
     disable_access_token_header = config.disable_access_token_header == "yes",
-    groups_claim = config.groups_claim == "groups"
+    groups_claim = config.groups_claim
   }
 end
 
