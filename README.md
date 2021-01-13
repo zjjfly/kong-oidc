@@ -48,6 +48,8 @@ ngx.ctx.authenticated_credential = {
 }
 ```
 
+For successfully authenticated request, possible (anonymous) consumer identity set by higher priority plugin is cleared as part of setting the credentials.
+
 The plugin will try to retrieve the user's groups from a field in the token (default `groups`) and set `kong.ctx.shared.authenticated_groups` so that Kong authorization plugins can make decisions based on the user's group membership.
 
 ## Dependencies
@@ -153,6 +155,8 @@ Server: kong/0.11.0
 ```
 
 ### Upstream API request
+
+For successfully authenticated request, the plugin will set upstream header `X-Credential-Identifier` to contain `sub` claim from user info, ID token or introspection result. Header `X-Anonymous-Consumer` is cleared.
 
 The plugin adds a additional `X-Userinfo`, `X-Access-Token` and `X-Id-Token` headers to the upstream request, which can be consumer by upstream server. All of them are base64 encoded:
 

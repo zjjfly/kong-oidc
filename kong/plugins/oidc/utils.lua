@@ -1,4 +1,5 @@
 local cjson = require("cjson")
+local constants = require "kong.constants"
 
 local M = {}
 
@@ -81,6 +82,51 @@ function M.exit(httpStatusCode, message, ngxCode)
   ngx.exit(ngxCode)
 end
 
+
+-- Function set_consumer is derived from the following kong auth plugins:
+-- https://github.com/Kong/kong/blob/2.2.0/kong/plugins/ldap-auth/access.lua
+-- https://github.com/Kong/kong/blob/2.2.0/kong/plugins/oauth2/access.lua
+-- Copyright 2016-2020 Kong Inc. Licensed under the Apache License, Version 2.0
+-- https://github.com/Kong/kong/blob/2.2.0/LICENSE
+local function set_consumer(consumer, credential)
+  kong.client.authenticate(consumer, credential)
+
+  local set_header = kong.service.request.set_header
+  local clear_header = kong.service.request.clear_header
+
+  if consumer and consumer.id then
+    set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
+  else
+    clear_header(constants.HEADERS.CONSUMER_ID)
+  end
+
+  if consumer and consumer.custom_id then
+    set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
+  else
+    clear_header(constants.HEADERS.CONSUMER_CUSTOM_ID)
+  end
+
+  if consumer and consumer.username then
+    set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
+  else
+    clear_header(constants.HEADERS.CONSUMER_USERNAME)
+  end
+
+  if credential and credential.sub then
+    set_header(constants.HEADERS.CREDENTIAL_IDENTIFIER, credential.sub)
+  else
+    clear_header(constants.HEADERS.CREDENTIAL_IDENTIFIER)
+  end
+
+  clear_header(constants.HEADERS.CREDENTIAL_USERNAME)
+
+  if credential then
+    clear_header(constants.HEADERS.ANONYMOUS)
+  else
+    set_header(constants.HEADERS.ANONYMOUS, true)
+  end
+end
+
 function M.injectAccessToken(accessToken, headerName, bearerToken)
   ngx.log(ngx.DEBUG, "Injecting " .. headerName)
   local token = accessToken
@@ -101,7 +147,7 @@ function M.injectUser(user, headerName)
   local tmp_user = user
   tmp_user.id = user.sub
   tmp_user.username = user.preferred_username
-  ngx.ctx.authenticated_credential = tmp_user
+  set_consumer(nil, tmp_user)
   local userinfo = cjson.encode(user)
   ngx.req.set_header(headerName, ngx.encode_base64(userinfo))
 end
