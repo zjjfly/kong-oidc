@@ -97,6 +97,7 @@ If you're using `luarocks` execute the following:
 | `config.disable_id_token_header`            | no                                         | false    | Disable passing the ID Token to the upstream server                                                                                                                                     |
 | `config.disable_access_token_header`        | no                                         | false    | Disable passing the Access Token to the upstream server                                                                                                                                 |
 | `config.groups_claim`                       | groups                                     | false    | Name of the claim in the token to get groups from                                                                                                                                       |
+| `config.skip_already_auth_requests`         | no                                         | false    | Ignore requests where credentials have already been set by a higher priority plugin such as basic-auth                                                                                  |
 
 ### Enabling kong-oidc
 

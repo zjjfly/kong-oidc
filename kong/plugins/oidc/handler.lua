@@ -15,6 +15,14 @@ function OidcHandler:access(config)
   OidcHandler.super.access(self)
   local oidcConfig = utils.get_options(config, ngx)
 
+  -- partial support for plugin chaining: allow skipping requests, where higher priority
+  -- plugin has already set the credentials. The 'config.anomyous' approach to define
+  -- "and/or" relationship between auth plugins is not utilized
+  if oidcConfig.skip_already_auth_requests and kong.client.get_credential() then
+    ngx.log(ngx.DEBUG, "OidcHandler ignoring already auth request: " .. ngx.var.request_uri)
+    return
+  end
+
   if filter.shouldProcessRequest(oidcConfig) then
     session.configure(config)
     handle(oidcConfig)

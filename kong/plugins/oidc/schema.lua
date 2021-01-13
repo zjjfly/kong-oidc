@@ -29,6 +29,7 @@ return {
     disable_id_token_header = { type = "string", required = false, default = "no" },
     disable_access_token_header = { type = "string", required = false, default = "no" },
     revoke_tokens_on_logout = { type = "string", required = false, default = "no" },
-    groups_claim = { type = "string", required = false, default = "groups" }
+    groups_claim = { type = "string", required = false, default = "groups" },
+    skip_already_auth_requests = { type = "string", required = false, default = "no" }
   }
 }
