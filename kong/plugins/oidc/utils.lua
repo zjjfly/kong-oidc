@@ -142,12 +142,15 @@ function M.injectIDToken(idToken, headerName)
   ngx.req.set_header(headerName, ngx.encode_base64(tokenStr))
 end
 
-function M.injectUser(user, headerName)
-  ngx.log(ngx.DEBUG, "Injecting " .. headerName)
+function M.setCredentials(user)
   local tmp_user = user
   tmp_user.id = user.sub
   tmp_user.username = user.preferred_username
   set_consumer(nil, tmp_user)
+end
+
+function M.injectUser(user, headerName)
+  ngx.log(ngx.DEBUG, "Injecting " .. headerName) 
   local userinfo = cjson.encode(user)
   ngx.req.set_header(headerName, ngx.encode_base64(userinfo))
 end

@@ -38,18 +38,27 @@ function handle(oidcConfig)
   if oidcConfig.introspection_endpoint then
     response = introspect(oidcConfig)
     if response then
-      utils.injectUser(response, oidcConfig.userinfo_header_name)
+      utils.setCredentials(response)
       utils.injectGroups(response, oidcConfig.groups_claim)
+      utils.injectUser(response, oidcConfig.userinfo_header_name)
     end
   end
 
   if response == nil then
     response = make_oidc(oidcConfig)
     if response then
+      if response.user or response.id_token then
+        -- is there any scenario where lua-resty-openidc would not provide id_token?
+        utils.setCredentials(response.user or response.id_token)
+      end
+      if response.user and response.user[oidcConfig.groups_claim]  ~= nil then
+        utils.injectGroups(response.user, oidcConfig.groups_claim)
+      elseif response.id_token then
+        utils.injectGroups(response.id_token, oidcConfig.groups_claim)
+      end
       if (not oidcConfig.disable_userinfo_header
           and response.user) then
         utils.injectUser(response.user, oidcConfig.userinfo_header_name)
-        utils.injectGroups(response.user, oidcConfig.groups_claim)
       end
       if (not oidcConfig.disable_access_token_header
           and response.access_token) then
