@@ -12,6 +12,7 @@ return {
     realm = { type = "string", required = true, default = "kong" },
     redirect_uri = { type = "string" },
     scope = { type = "string", required = true, default = "openid" },
+    validate_scope = { type = "string", required = true, default = "no" },
     response_type = { type = "string", required = true, default = "code" },
     ssl_verify = { type = "string", required = true, default = "no" },
     use_jwks = { type = "string", required = true, default = "no" },
