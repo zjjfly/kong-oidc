@@ -57,6 +57,7 @@ function M.get_options(config, ngx)
     realm = config.realm,
     redirect_uri = config.redirect_uri or M.get_redirect_uri(ngx),
     scope = config.scope,
+    validate_scope = config.validate_scope,
     response_type = config.response_type,
     ssl_verify = config.ssl_verify,
     use_jwks = config.use_jwks,
