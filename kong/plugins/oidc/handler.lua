@@ -118,21 +118,6 @@ function introspect(oidcConfig)
     local res, err
     if oidcConfig.use_jwks == "yes" then
       res, err = require("resty.openidc").bearer_jwt_verify(oidcConfig)
-      if err then
-        utils.exit(ngx.HTTP_UNAUTHORIZED, err, ngx.HTTP_UNAUTHORIZED)
-      end
-      if oidcConfig.validate_scope == "yes" then
-        local validScope = false
-        for scope in res.scope:gmatch("([^ ]+)")  do
-          if scope == oidcConfig.scope then
-            validScope = true
-            break
-          end
-        end
-        if not validScope then
-          utils.exit(ngx.HTTP_FORBIDDEN,"Invalid scope",ngx.HTTP_FORBIDDEN)
-        end
-      end
     else
       res, err = require("resty.openidc").introspect(oidcConfig)
     end
@@ -142,6 +127,19 @@ function introspect(oidcConfig)
         utils.exit(ngx.HTTP_UNAUTHORIZED, err, ngx.HTTP_UNAUTHORIZED)
       end
       return nil
+    end
+    -- authorization - validate scope
+    if oidcConfig.validate_scope == "yes" then
+      local validScope = false
+      for scope in res.scope:gmatch("([^ ]+)") do
+        if scope == oidcConfig.scope then
+          validScope = true
+          break
+        end
+      end
+      if not validScope then
+        utils.exit(ngx.HTTP_FORBIDDEN,"Invalid scope",ngx.HTTP_FORBIDDEN)
+      end
     end
     ngx.log(ngx.DEBUG, "OidcHandler introspect succeeded, requested path: " .. ngx.var.request_uri)
     return res
