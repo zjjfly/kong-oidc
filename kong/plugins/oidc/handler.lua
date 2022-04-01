@@ -131,11 +131,13 @@ function introspect(oidcConfig)
     -- authorization - validate scope
     if oidcConfig.validate_scope == "yes" then
       local validScope = false
-      for scope in res.scope:gmatch("([^ ]+)") do
-        if scope == oidcConfig.scope then
-          validScope = true
-          break
-        end
+      if res.scope then
+        for scope in res.scope:gmatch("([^ ]+)") do
+          if scope == oidcConfig.scope then
+            validScope = true
+            break
+          end
+        end  
       end
       if not validScope then
         utils.exit(ngx.HTTP_FORBIDDEN,"Invalid scope",ngx.HTTP_FORBIDDEN)
