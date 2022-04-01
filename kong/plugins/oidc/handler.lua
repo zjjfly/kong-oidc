@@ -128,7 +128,6 @@ function introspect(oidcConfig)
       end
       return nil
     end
-    -- authorization - validate scope
     if oidcConfig.validate_scope == "yes" then
       local validScope = false
       if res.scope then
@@ -137,7 +136,7 @@ function introspect(oidcConfig)
             validScope = true
             break
           end
-        end  
+        end
       end
       if not validScope then
         utils.exit(ngx.HTTP_FORBIDDEN,"Invalid scope",ngx.HTTP_FORBIDDEN)
