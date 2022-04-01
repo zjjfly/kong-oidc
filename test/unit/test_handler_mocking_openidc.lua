@@ -214,14 +214,63 @@ function TestHandler:test_introspect_bearer_token_and_property_mapping()
   ngx.encode_base64 = function(x) return "x" end
 
   local headers = {}
-  ngx.req.set_header = function(h, v)
-    headers[h] = v
-  end
+  kong.service.request.set_header = function(name, value) headers[name] = value end
 
-  self.handler:access({introspection_endpoint = "x", bearer_only = "yes", use_jwks = "yes", mappings = {'foo:X-Foo', 'incorrect', 'not:present'}})
+  self.handler:access({introspection_endpoint = "x", bearer_only = "yes", use_jwks = "yes", disable_userinfo_header = "yes", header_names = {'X-Foo', 'present'}, header_claims = {'foo', 'not'}})
   lu.assertEquals(headers["X-Foo"], 'bar')
-  lu.assertTrue(self:log_contains("not present on token"))
-  lu.assertTrue(self:log_contains("Ignoring incorrect configuration"))
+  lu.assertNil(headers["present"])
+end
+
+function TestHandler:test_introspect_bearer_token_and_incorrect_property_mapping()
+  self.module_resty.openidc.bearer_jwt_verify = function(opts)
+    return {foo = "bar"}, false
+  end
+  ngx.req.get_headers = function() return {Authorization = "Bearer xxx"} end
+
+  ngx.encode_base64 = function(x) return "x" end
+
+  local headers = {}
+  kong.service.request.set_header = function(name, value) headers[name] = value end
+
+  self.handler:access({introspection_endpoint = "x", bearer_only = "yes", use_jwks = "yes", disable_userinfo_header = "yes", header_names = {'X-Foo'}, header_claims = {'foo', 'incorrect'}})
+  lu.assertNil(headers["X-Foo"])
+end
+
+function TestHandler:test_introspect_bearer_token_and_scope_nok()
+  self.module_resty.openidc.bearer_jwt_verify = function(opts)
+    return {scope = "foo"}, false
+  end
+  ngx.req.get_headers = function() return {Authorization = "Bearer xxx"} end
+
+  ngx.encode_base64 = function(x) return "x" end
+
+  self.handler:access({introspection_endpoint = "x", bearer_only = "yes", use_jwks = "yes", userinfo_header_name = "X-Userinfo", validate_scope = "yes", scope = "bar"})
+  lu.assertEquals(ngx.status, ngx.HTTP_FORBIDDEN)
+end
+
+function TestHandler:test_introspect_bearer_token_and_empty_scope_nok()
+  self.module_resty.openidc.bearer_jwt_verify = function(opts)
+    return {foo = "bar"}, false
+  end
+  ngx.req.get_headers = function() return {Authorization = "Bearer xxx"} end
+
+  ngx.encode_base64 = function(x) return "x" end
+
+  self.handler:access({introspection_endpoint = "x", bearer_only = "yes", use_jwks = "yes", userinfo_header_name = "X-Userinfo", validate_scope = "yes", scope = "bar"})
+  lu.assertEquals(ngx.status, ngx.HTTP_FORBIDDEN)
+end
+
+function TestHandler:test_introspect_bearer_token_and_scope_ok()
+  self.module_resty.openidc.bearer_jwt_verify = function(opts)
+    return {scope = "foo bar"}, false
+  end
+  ngx.req.get_headers = function() return {Authorization = "Bearer xxx"} end
+
+  ngx.encode_base64 = function(x) return "x" end
+
+  self.handler:access({introspection_endpoint = "x", bearer_only = "yes", use_jwks = "yes", userinfo_header_name = "X-Userinfo", validate_scope = "yes", scope = "bar"})
+  lu.assertNotEquals(ngx.status, ngx.HTTP_FORBIDDEN)
+  lu.assertNotEquals(ngx.status, ngx.HTTP_INTERNAL_SERVER_ERROR)
 end
 
 lu.run()

@@ -9,6 +9,8 @@ function MockableCase:setUp()
     DEBUG = "debug",
     ERR = "error",
     HTTP_UNAUTHORIZED = 401,
+    HTTP_FORBIDDEN = 403,
+    HTTP_INTERNAL_SERVER_ERROR = 500,
     ctx = {},
     header = {},
     var = {request_uri = "/"},

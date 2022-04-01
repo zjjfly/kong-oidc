@@ -84,10 +84,10 @@ function M.get_options(config, ngx)
   }
 end
 
-function M.exit(httpStatusCode, message, ngxCode)
-  ngx.status = httpStatusCode
-  ngx.say(message)
-  ngx.exit(ngxCode)
+function M.exit(statusCode, message)
+  ngx.status = statusCode
+  kong.log.err(message)
+  ngx.exit(statusCode)
 end
 
 
