@@ -84,13 +84,6 @@ function M.get_options(config, ngx)
   }
 end
 
-function M.exit(statusCode, message)
-  ngx.status = statusCode
-  kong.log.err(message)
-  ngx.exit(statusCode)
-end
-
-
 -- Function set_consumer is derived from the following kong auth plugins:
 -- https://github.com/Kong/kong/blob/2.2.0/kong/plugins/ldap-auth/access.lua
 -- https://github.com/Kong/kong/blob/2.2.0/kong/plugins/oauth2/access.lua
@@ -99,39 +92,36 @@ end
 local function set_consumer(consumer, credential)
   kong.client.authenticate(consumer, credential)
 
-  local set_header = kong.service.request.set_header
-  local clear_header = kong.service.request.clear_header
-
   if consumer and consumer.id then
-    set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
+    kong.service.request.set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
   else
-    clear_header(constants.HEADERS.CONSUMER_ID)
+    kong.service.request.clear_header(constants.HEADERS.CONSUMER_ID)
   end
 
   if consumer and consumer.custom_id then
-    set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
+    kong.service.request.set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
   else
-    clear_header(constants.HEADERS.CONSUMER_CUSTOM_ID)
+    kong.service.request.clear_header(constants.HEADERS.CONSUMER_CUSTOM_ID)
   end
 
   if consumer and consumer.username then
-    set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
+    kong.service.request.set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
   else
-    clear_header(constants.HEADERS.CONSUMER_USERNAME)
+    kong.service.request.clear_header(constants.HEADERS.CONSUMER_USERNAME)
   end
 
   if credential and credential.sub then
-    set_header(constants.HEADERS.CREDENTIAL_IDENTIFIER, credential.sub)
+    kong.service.request.set_header(constants.HEADERS.CREDENTIAL_IDENTIFIER, credential.sub)
   else
-    clear_header(constants.HEADERS.CREDENTIAL_IDENTIFIER)
+    kong.service.request.clear_header(constants.HEADERS.CREDENTIAL_IDENTIFIER)
   end
 
-  clear_header(constants.HEADERS.CREDENTIAL_USERNAME)
+  kong.service.request.clear_header(constants.HEADERS.CREDENTIAL_USERNAME)
 
   if credential then
-    clear_header(constants.HEADERS.ANONYMOUS)
+    kong.service.request.clear_header(constants.HEADERS.ANONYMOUS)
   else
-    set_header(constants.HEADERS.ANONYMOUS, true)
+    kong.service.request.set_header(constants.HEADERS.ANONYMOUS, true)
   end
 end
 
@@ -141,13 +131,13 @@ function M.injectAccessToken(accessToken, headerName, bearerToken)
   if (bearerToken) then
     token = formatAsBearerToken(token)
   end
-  ngx.req.set_header(headerName, token)
+  kong.service.request.set_header(headerName, token)
 end
 
 function M.injectIDToken(idToken, headerName)
   ngx.log(ngx.DEBUG, "Injecting " .. headerName)
   local tokenStr = cjson.encode(idToken)
-  ngx.req.set_header(headerName, ngx.encode_base64(tokenStr))
+  kong.service.request.set_header(headerName, ngx.encode_base64(tokenStr))
 end
 
 function M.setCredentials(user)
@@ -160,7 +150,7 @@ end
 function M.injectUser(user, headerName)
   ngx.log(ngx.DEBUG, "Injecting " .. headerName)
   local userinfo = cjson.encode(user)
-  ngx.req.set_header(headerName, ngx.encode_base64(userinfo))
+  kong.service.request.set_header(headerName, ngx.encode_base64(userinfo))
 end
 
 function M.injectGroups(user, claim)

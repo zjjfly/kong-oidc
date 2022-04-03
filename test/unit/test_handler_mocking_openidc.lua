@@ -38,9 +38,7 @@ function TestHandler:test_authenticate_ok_with_userinfo()
   end
 
   local headers = {}
-  ngx.req.set_header = function(h, v)
-    headers[h] = v
-  end
+  kong.service.request.set_header = function(name, value) headers[name] = value end
 
   self.handler:access({userinfo_header_name = 'X-Userinfo'})
   lu.assertTrue(self:log_contains("calling authenticate"))
@@ -54,9 +52,7 @@ function TestHandler:test_authenticate_ok_with_no_accesstoken()
   end
 
   local headers = {}
-  ngx.req.set_header = function(h, v)
-    headers[h] = v
-  end
+  kong.service.request.set_header = function(name, value) headers[name] = value end
 
   self.handler:access({disable_id_token_header = "yes"})
   lu.assertTrue(self:log_contains("calling authenticate"))
@@ -65,28 +61,24 @@ end
 
 function TestHandler:test_authenticate_ok_with_accesstoken()
   self.module_resty.openidc.authenticate = function(opts)
-    return {id_token = { sub = "sub" } , access_token = "ACCESS_TOKEN"}, true
+    return {id_token = { sub = "sub" } , access_token = "ACCESS_TOKEN"}, false
   end
 
   local headers = {}
-  ngx.req.set_header = function(h, v)
-    headers[h] = v
-  end
+  kong.service.request.set_header = function(name, value) headers[name] = value end
 
-  self.handler:access({access_token_header_name = 'X-Access-Token', disable_id_token_header = "yes"})
+  self.handler:access({access_token_header_name = 'X-Access-Token', disable_id_token_header = "yes"})  
   lu.assertTrue(self:log_contains("calling authenticate"))
   lu.assertEquals(headers['X-Access-Token'], "ACCESS_TOKEN")
 end
 
 function TestHandler:test_authenticate_ok_with_no_idtoken()
   self.module_resty.openidc.authenticate = function(opts)
-    return {}, true
+    return {}, false
   end
 
   local headers = {}
-  ngx.req.set_header = function(h, v)
-    headers[h] = v
-  end
+  kong.service.request.set_header = function(name, value) headers[name] = value end
 
   self.handler:access({})
   lu.assertTrue(self:log_contains("calling authenticate"))
@@ -95,7 +87,7 @@ end
 
 function TestHandler:test_authenticate_ok_with_idtoken()
   self.module_resty.openidc.authenticate = function(opts)
-    return {id_token = {sub = "sub"}}, true
+    return {id_token = {sub = "sub"}}, false
   end
 
   ngx.encode_base64 = function(x)
@@ -103,9 +95,7 @@ function TestHandler:test_authenticate_ok_with_idtoken()
   end
 
   local headers = {}
-  ngx.req.set_header = function(h, v)
-    headers[h] = v
-  end
+  kong.service.request.set_header = function(name, value) headers[name] = value end
 
   self.handler:access({id_token_header_name = 'X-ID-Token'})
   lu.assertTrue(self:log_contains("calling authenticate"))
@@ -124,9 +114,9 @@ end
 function TestHandler:test_authenticate_nok_deny()
   self.module_resty.openidc.authenticate = function(opts)
     if opts.unauth_action == "deny" then
-		return nil, "unauthorized request"
-	end
-	return {}, true
+		  return nil, "unauthorized request"
+	  end
+	  return {}, true
   end
 
   self.handler:access({unauth_action = "deny"})
@@ -163,9 +153,7 @@ function TestHandler:test_introspect_ok_with_userinfo()
   end
 
   local headers = {}
-  ngx.req.set_header = function(h, v)
-    headers[h] = v
-  end
+  kong.service.request.set_header = function(name, value) headers[name] = value end
 
   self.handler:access({introspection_endpoint = "x", userinfo_header_name = "X-Userinfo"})
   lu.assertTrue(self:log_contains("introspect succeeded"))
@@ -183,11 +171,9 @@ function TestHandler:test_bearer_only_with_good_token()
   end
 
   local headers = {}
-  ngx.req.set_header = function(h, v)
-    headers[h] = v
-  end
-  self.handler:access({introspection_endpoint = "x", bearer_only = "yes", realm = "kong", userinfo_header_name = "X-Userinfo"})
+  kong.service.request.set_header = function(name, value) headers[name] = value end
 
+  self.handler:access({introspection_endpoint = "x", bearer_only = "yes", realm = "kong", userinfo_header_name = "X-Userinfo"})
   lu.assertTrue(self:log_contains("introspect succeeded"))
   lu.assertEquals(headers['X-Userinfo'], "eyJzdWIiOiJzdWIifQ==")
 end
