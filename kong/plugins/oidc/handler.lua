@@ -101,13 +101,13 @@ function make_oidc(oidcConfig)
 
   if err then
     if err == 'unauthorized request' then
-      utils.exit(ngx.HTTP_UNAUTHORIZED, err)
+      return kong.response.error(ngx.HTTP_UNAUTHORIZED)
     else
       if oidcConfig.recovery_page_path then
     	  ngx.log(ngx.DEBUG, "Redirecting to recovery page: " .. oidcConfig.recovery_page_path)
         ngx.redirect(oidcConfig.recovery_page_path)
       end
-      utils.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, err)
+      return kong.response.error(ngx.HTTP_INTERNAL_SERVER_ERROR)
     end
   end
   return res
@@ -124,7 +124,7 @@ function introspect(oidcConfig)
     if err then
       if oidcConfig.bearer_only == "yes" then
         ngx.header["WWW-Authenticate"] = 'Bearer realm="' .. oidcConfig.realm .. '",error="' .. err .. '"'
-        utils.exit(ngx.HTTP_UNAUTHORIZED, err)
+        return kong.response.error(ngx.HTTP_UNAUTHORIZED)
       end
       return nil
     end
@@ -139,7 +139,8 @@ function introspect(oidcConfig)
         end
       end
       if not validScope then
-        utils.exit(ngx.HTTP_FORBIDDEN, 'Scope validation failed')
+        kong.log.err("Scope validation failed")
+        return kong.response.error(ngx.HTTP_FORBIDDEN)
       end
     end
     ngx.log(ngx.DEBUG, "OidcHandler introspect succeeded, requested path: " .. ngx.var.request_uri)

@@ -46,6 +46,11 @@ function MockableCase:setUp()
         set_header = function(...) end
       }
     },
+    response = {
+      error = function(status)
+        ngx.status = status
+      end
+    },
     log = {
       err = function(...) end
     },
