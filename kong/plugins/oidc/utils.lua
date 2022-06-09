@@ -74,6 +74,7 @@ function M.get_options(config, ngx)
     disable_userinfo_header = config.disable_userinfo_header == "yes",
     disable_id_token_header = config.disable_id_token_header == "yes",
     disable_access_token_header = config.disable_access_token_header == "yes",
+    revoke_tokens_on_logout = config.revoke_tokens_on_logout == "yes",
     groups_claim = config.groups_claim,
     skip_already_auth_requests = config.skip_already_auth_requests == "yes",
     bearer_jwt_auth_enable = config.bearer_jwt_auth_enable == "yes",
