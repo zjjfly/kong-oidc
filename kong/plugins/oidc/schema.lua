@@ -21,6 +21,8 @@ return {
     recovery_page_path = { type = "string" },
     logout_path = { type = "string", required = false, default = '/logout' },
     redirect_after_logout_uri = { type = "string", required = false, default = '/' },
+    redirect_after_logout_with_id_token_hint = { type = "string", required = false, default = "no" },
+    post_logout_redirect_uri = { type = "string", required = false },
     unauth_action = { type = "string", required = false, default = "auth" },
     filters = { type = "string" },
     ignore_auth_filters = { type = "string", default = "" },
