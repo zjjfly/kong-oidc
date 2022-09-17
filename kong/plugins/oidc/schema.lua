@@ -173,8 +173,7 @@ return {
           {
             ignore_auth_filters = {
               type = "string",
-              required = false,
-              default = ""
+              required = false
             }
           },
           {
