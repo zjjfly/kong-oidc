@@ -173,6 +173,7 @@ return {
           {
             ignore_auth_filters = {
               type = "string",
+              required = false,
               default = ""
             }
           },
@@ -256,13 +257,19 @@ return {
           {
             bearer_jwt_auth_allowed_auds = {
               type = "array",
-              required = false
+              required = false,
+              elements = {
+                type = "string"
+              },
             }
           },
           {
             bearer_jwt_auth_signing_algs = {
               type = "array",
               required = true,
+              elements = {
+                type = "string"
+              },
               default = {
                 "RS256"
               }
@@ -272,6 +279,9 @@ return {
             header_names = {
               type = "array",
               required = true,
+              elements = {
+                type = "string"
+              },
               default = {}
             }
           },
@@ -279,6 +289,9 @@ return {
             header_claims = {
               type = "array",
               required = true,
+              elements = {
+                type = "string"
+              },
               default = {}
             }
           }
