@@ -1,15 +1,10 @@
-local BasePlugin = require "kong.plugins.base_plugin"
-local OidcHandler = BasePlugin:extend()
+local OidcHandler = {
+    PRIORITY = 1000,
+}
 local utils = require("kong.plugins.oidc.utils")
 local filter = require("kong.plugins.oidc.filter")
 local session = require("kong.plugins.oidc.session")
 
-OidcHandler.PRIORITY = 1000
-
-
-function OidcHandler:new()
-  OidcHandler.super.new(self, "oidc")
-end
 
 function OidcHandler:access(config)
   OidcHandler.super.access(self)
