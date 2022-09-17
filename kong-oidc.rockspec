@@ -1,5 +1,5 @@
 package = "kong-oidc"
-version = "1.3.0-0"
+version = "1.3.0-1"
 source = {
     url = "git://github.com/revomatico/kong-oidc",
     tag = "master",
