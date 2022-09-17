@@ -116,7 +116,7 @@ return {
           }
         },
         {
-          session_secret = {elem
+          session_secret = {
             type = "string",
             required = false
           }
