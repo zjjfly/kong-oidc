@@ -8,7 +8,6 @@ local session = require("kong.plugins.oidc.session")
 
 
 function OidcHandler:access(config)
-  OidcHandler.super.access(self)
   local oidcConfig = utils.get_options(config, ngx)
 
   -- partial support for plugin chaining: allow skipping requests, where higher priority
