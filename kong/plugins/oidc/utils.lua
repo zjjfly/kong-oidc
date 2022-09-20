@@ -88,43 +88,44 @@ function M.get_options(config, ngx)
 end
 
 -- Function set_consumer is derived from the following kong auth plugins:
--- https://github.com/Kong/kong/blob/2.2.0/kong/plugins/ldap-auth/access.lua
--- https://github.com/Kong/kong/blob/2.2.0/kong/plugins/oauth2/access.lua
--- Copyright 2016-2020 Kong Inc. Licensed under the Apache License, Version 2.0
--- https://github.com/Kong/kong/blob/2.2.0/LICENSE
+-- https://github.com/Kong/kong/blob/3.0.0/kong/plugins/ldap-auth/access.lua
+-- https://github.com/Kong/kong/blob/3.0.0/kong/plugins/oauth2/access.lua
+-- Copyright 2016-2022 Kong Inc. Licensed under the Apache License, Version 2.0
+-- https://github.com/Kong/kong/blob/3.0.0/LICENSE
 local function set_consumer(consumer, credential)
   kong.client.authenticate(consumer, credential)
 
+  local set_header = kong.service.request.set_header
+  local clear_header = kong.service.request.clear_header
+
   if consumer and consumer.id then
-    kong.service.request.set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
+    set_header(constants.HEADERS.CONSUMER_ID, consumer.id)
   else
-    kong.service.request.clear_header(constants.HEADERS.CONSUMER_ID)
+    clear_header(constants.HEADERS.CONSUMER_ID)
   end
 
   if consumer and consumer.custom_id then
-    kong.service.request.set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
+    set_header(constants.HEADERS.CONSUMER_CUSTOM_ID, consumer.custom_id)
   else
-    kong.service.request.clear_header(constants.HEADERS.CONSUMER_CUSTOM_ID)
+    clear_header(constants.HEADERS.CONSUMER_CUSTOM_ID)
   end
 
   if consumer and consumer.username then
-    kong.service.request.set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
+    set_header(constants.HEADERS.CONSUMER_USERNAME, consumer.username)
   else
-    kong.service.request.clear_header(constants.HEADERS.CONSUMER_USERNAME)
+    clear_header(constants.HEADERS.CONSUMER_USERNAME)
   end
 
-  if credential and credential.sub then
-    kong.service.request.set_header(constants.HEADERS.CREDENTIAL_IDENTIFIER, credential.sub)
+  if credential and credential.username then
+    set_header(constants.HEADERS.CREDENTIAL_IDENTIFIER, credential.username)
   else
-    kong.service.request.clear_header(constants.HEADERS.CREDENTIAL_IDENTIFIER)
+    clear_header(constants.HEADERS.CREDENTIAL_IDENTIFIER)
   end
-
-  kong.service.request.clear_header(constants.HEADERS.CREDENTIAL_USERNAME)
 
   if credential then
-    kong.service.request.clear_header(constants.HEADERS.ANONYMOUS)
+    clear_header(constants.HEADERS.ANONYMOUS)
   else
-    kong.service.request.set_header(constants.HEADERS.ANONYMOUS, true)
+    set_header(constants.HEADERS.ANONYMOUS, true)
   end
 end
 
