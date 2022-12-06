@@ -224,7 +224,7 @@ To pass the access token to the upstream server as a normal Bearer token, config
 | Key                                    | Value           |
 | -------------------------------------- | --------------- |
 | `config.access_token_header_name`      | `Authorization` |
-| `config.access_token_header_as_bearer` | `yes`           |
+| `config.access_token_as_bearer`        | `yes`           |
 
 ## Development
 
