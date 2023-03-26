@@ -1,5 +1,5 @@
 package = "kong-oidc"
-version = "1.3.0-3"
+version = "1.3.1-1"
 source = {
     url = "git://github.com/revomatico/kong-oidc",
     tag = "master",
@@ -22,7 +22,7 @@ description = {
     license = "Apache 2.0"
 }
 dependencies = {
-    "lua-resty-openidc ~> 1.7.5-1"
+    "lua-resty-openidc ~> 1.7.6-3"
 }
 build = {
     type = "builtin",
