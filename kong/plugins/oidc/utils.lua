@@ -51,7 +51,7 @@ function M.get_options(config, ngx)
     for i, id in ipairs(client_id) do
         local secret = client_secret[i]
         if (not (secret == nil)) then
-            map[client_id] = client_secret
+            map[id] = secret
         end
     end
     return {
