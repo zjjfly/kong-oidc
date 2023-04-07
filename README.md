@@ -75,8 +75,9 @@ If you're using `luarocks` execute the following:
 | Parameter                                   | Default                                    | Required | description                                                                                                                                                                             |
 | ------------------------------------------- | ------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`                                      |                                            | true     | plugin name, has to be `oidc`                                                                                                                                                           |
-| `config.client_id`                          |                                            | true     | OIDC Client ID                                                                                                                                                                          |
-| `config.client_secret`                      |                                            | true     | OIDC Client secret                                                                                                                                                                      |
+| `config.client_id`                          |                                            | true     | OIDC Client ID(s)                                                                                                                                                                          |
+| `config.client_secret`                      |                                            | true     | OIDC Client secret(s)                                                                                                                                                                     |
+| `config.client_arg`                          | Client_ID                                 | true     | Header key contains Client ID                                                                                                                                                                          |
 | `config.discovery`                          | <https://.well-known/openid-configuration> | false    | OIDC Discovery Endpoint (`/.well-known/openid-configuration`)                                                                                                                           |
 | `config.scope`                              | openid                                     | false    | OAuth2 Token scope. To use OIDC it has to contains the `openid` scope                                                                                                                   |
 | `config.ssl_verify`                         | false                                      | false    | Enable SSL verification to OIDC Provider                                                                                                                                                |
@@ -145,11 +146,11 @@ Server: kong/0.11.0
     "created_at": 1508871239797,
     "config": {
         "response_type": "code",
-        "client_id": "kong-oidc",
+        "client_id": ["kong-oidc"],
         "discovery": "https://<oidc_provider>/.well-known/openid-configuration",
         "scope": "openid",
         "ssl_verify": "no",
-        "client_secret": "29d98bf7-168c-4874-b8e9-9ba5e7382fa0",
+        "client_secret": ["29d98bf7-168c-4874-b8e9-9ba5e7382fa0"],
         "token_endpoint_auth_method": "client_secret_post"
     },
     "id": "58cc119b-e5d0-4908-8929-7d6ed73cb7de",
