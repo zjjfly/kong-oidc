@@ -26,7 +26,8 @@ function OidcHandler:access(config)
         ngx.log(ngx.DEBUG, "OidcHandler ignoring request, client id not found: " .. client_id)
         return
     end
-    copy_conf = {table.unpack(oidcConfig)}
+    
+    local copy_conf = utils.deepcopy(oidcConfig)
     copy_conf.client_id = client_id
     copy_conf.client_secret = client_secret
     if filter.shouldProcessRequest(copy_conf) then
