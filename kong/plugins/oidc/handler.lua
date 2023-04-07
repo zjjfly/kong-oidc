@@ -17,7 +17,7 @@ function OidcHandler:access(config)
         return
     end
 
-    local client_id = kong.service.request.get_header(oidcConfig.client_arg)
+    local client_id = kong.request.get_header(oidcConfig.client_arg)
     if (client_id == nil) then
         ngx.log(ngx.WARN, "Client ID not found in headers!")
         return
