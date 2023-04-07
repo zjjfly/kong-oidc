@@ -8,7 +8,6 @@ local session = require("kong.plugins.oidc.session")
 
 function OidcHandler:access(config)
     local oidcConfig = utils.get_options(config, ngx)
-
     -- partial support for plugin chaining: allow skipping requests, where higher priority
     -- plugin has already set the credentials. The 'config.anomyous' approach to define
     -- "and/or" relationship between auth plugins is not utilized
@@ -27,11 +26,12 @@ function OidcHandler:access(config)
         ngx.log(ngx.DEBUG, "OidcHandler ignoring request, client id not found: " .. client_id)
         return
     end
-    oidcConfig.client_id = client_id
-    oidcConfig.client_secret = client_secret
-    if filter.shouldProcessRequest(oidcConfig) then
-        session.configure(config)
-        handle(oidcConfig)
+    copy_conf = {table.unpack(oidcConfig)}
+    copy_conf.client_id = client_id
+    copy_conf.client_secret = client_secret
+    if filter.shouldProcessRequest(copy_conf) then
+        session.configure(copy_conf)
+        handle(copy_conf)
     else
         ngx.log(ngx.DEBUG, "OidcHandler ignoring request, path: " .. ngx.var.request_uri)
     end
