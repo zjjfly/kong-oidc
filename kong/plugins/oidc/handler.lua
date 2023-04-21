@@ -2,6 +2,7 @@ local OidcHandler = {
     VERSION = "1.3.0",
     PRIORITY = 1000
 }
+local jwt_decoder = require("kong.plugins.jwt.jwt_parser")
 local utils = require("kong.plugins.oidc.utils")
 local filter = require("kong.plugins.oidc.filter")
 local session = require("kong.plugins.oidc.session")
@@ -18,15 +19,37 @@ function OidcHandler:access(config)
 
     local client_id = kong.request.get_header(oidcConfig.client_arg)
     if (client_id == nil) then
-        kong.log.err("Client ID not found in headers!")
-        return kong.response.error(ngx.HTTP_UNAUTHORIZED)
+        return {
+            status = 401,
+            message = oidcConfig.client_arg .. "  not found in Headers"
+        }
     end
     local client_secret = oidcConfig.client_map[client_id]
     if (client_secret == nil) then
-        kong.log.err("OidcHandler ignoring request, client id not found: " .. client_id)
-        return kong.response.error(ngx.HTTP_UNAUTHORIZED)
+        return {
+            status = 401,
+            message = "This client is not allowed"
+        }
     end
-    
+
+    if oidcConfig.skip_already_auth_requests then
+        if kong.request.get_header("authorization") ~= null then
+            local token, err = retrive_token()
+            if err then
+                kong.log.err(err)
+                return {
+                    status = 500,
+                    message = "'Authorization' header is not a valid bearer token"
+                }
+            end
+            check_token(token, client_id)
+
+            ngx.log(ngx.DEBUG, "OidcHandler ignoring request with header 'authorization': " ..
+                kong.request.get_header("authorization"))
+            return
+        end
+    end
+
     local copy_conf = utils.deepcopy(oidcConfig)
     copy_conf.client_id = client_id
     copy_conf.client_secret = client_secret
@@ -38,6 +61,68 @@ function OidcHandler:access(config)
     end
 
     ngx.log(ngx.DEBUG, "OidcHandler done")
+end
+
+function retrieve_token()
+    local authorization_header = kong.request.get_header("authorization")
+    if authorization_header then
+        local iterator, iter_err = re_gmatch(authorization_header, "\\s*[Bb]earer\\s+(.+)")
+        if not iterator then
+            return nil, iter_err
+        end
+
+        local m, err = iterator()
+        if err then
+            return nil, err
+        end
+
+        if m and #m > 0 then
+            return m[1]
+        end
+    end
+end
+
+function check_token(token, client_id)
+    local token_type = type(token)
+    if token_type ~= "string" then
+        if token_type == "nil" then
+            return false, {
+                status = 401,
+                message = "Unauthorized"
+            }
+        elseif token_type == "table" then
+            return false, {
+                status = 401,
+                message = "Multiple tokens provided"
+            }
+        else
+            return false, {
+                status = 401,
+                message = "Unrecognizable token"
+            }
+        end
+    end
+
+    local jwt, err = jwt_decoder:new(token)
+    if err then
+        return false, {
+            status = 401,
+            message = "Bad token; " .. tostring(err)
+        }
+    end
+    local jwt_claims = jwt.claims
+    if jwt_claims.azq == nil then
+        return {
+            status = 401,
+            message = "Missing azq in claims"
+        }
+    end
+    if client_id ~= jwt_claims.azq then
+        return false, {
+            status = 401,
+            message = "Token azq not allowed"
+        }
+    end
 end
 
 function handle(oidcConfig)
