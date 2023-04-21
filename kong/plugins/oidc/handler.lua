@@ -128,6 +128,7 @@ function check_token(token, client_id)
             message = "Client id is not equal to or present in aud claim"
         }
     end
+    return true
 end
 
 function handle(oidcConfig)
