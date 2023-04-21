@@ -117,7 +117,7 @@ function check_token(token, client_id)
     end
     ngx.log(ngx.DEBUG, "JWT: " .. utils.table_stringfy(jwt))
     ngx.log(ngx.DEBUG, "JWT header: " .. utils.table_stringfy(jwt.header))
-    ngx.log(ngx.DEBUG, "JWT claims: " .. utils.table_stringfy(jwtclaims))
+    ngx.log(ngx.DEBUG, "JWT claims: " .. utils.table_stringfy(jwt.claims))
     local jwt_claims = jwt.claims
     if jwt_claims.azq == nil then
         return {
