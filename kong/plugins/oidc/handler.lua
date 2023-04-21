@@ -30,7 +30,7 @@ function OidcHandler:access(config)
     local client_secret = oidcConfig.client_map[client_id]
     if (client_secret == nil) then
         return kong.response.exit(401, {
-            message = "This client is not allowed: " .. client_id 
+            message = "This client is not allowed: " .. client_id
         })
     end
 
@@ -89,6 +89,15 @@ end
 
 function check_token(token, client_id)
     local token_type = type(token)
+    print("token: ", token)
+    local decoded, err = utils.decode_jwt()
+    if err then
+        return false, {
+            status = 401,
+            message = "Bad token: " .. token
+        }
+    end
+    print("decoed token" .. utils.table_stringfy(decoded))
     if token_type ~= "string" then
         if token_type == "nil" then
             return false, {
@@ -112,7 +121,7 @@ function check_token(token, client_id)
     if err then
         return false, {
             status = 401,
-            message = "Bad token; " .. tostring(err)
+            message = "Bad token: " .. tostring(err)
         }
     end
     ngx.log(ngx.DEBUG, "JWT: " .. utils.table_stringfy(jwt))
