@@ -122,6 +122,8 @@ function check_token(token, client_id)
             message = "Missing aud in claims"
         }
     end
+    ngx.log(ngx.DEBUG, "client id: " .. client_id)
+    ngx.log(ngx.DEBUG, "aud claim: " .. jwt_claims.aud)
     if not utils.has_common_item(client_id, jwt_claims.aud) then
         return {
             status = 401,
