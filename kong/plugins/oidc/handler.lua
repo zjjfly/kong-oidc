@@ -108,15 +108,6 @@ function check_token(token, client_id)
         end
     end
 
-    local decoded, err = utils.decode_jwt(token)
-    if err then
-        return false, {
-            status = 401,
-            message = "Bad token: " .. token
-        }
-    end
-    ngx.log(ngx.DEBUG, "decoed token" .. utils.table_stringfy(decoded))
-
     local jwt, err = jwt_decoder:new(token)
     if err then
         return false, {
@@ -124,9 +115,6 @@ function check_token(token, client_id)
             message = "Bad token: " .. tostring(err)
         }
     end
-    ngx.log(ngx.DEBUG, "JWT: " .. utils.table_stringfy(jwt))
-    ngx.log(ngx.DEBUG, "JWT header: " .. utils.table_stringfy(jwt.header))
-    ngx.log(ngx.DEBUG, "JWT claims: " .. utils.table_stringfy(jwt.claims))
     local jwt_claims = jwt.claims
     if jwt_claims.aud == nil then
         return {
@@ -134,10 +122,10 @@ function check_token(token, client_id)
             message = "Missing aud in claims"
         }
     end
-    if client_id ~= jwt_claims.aud then
-        return false, {
+    if not utils.has_common_item(client_id, jwt_claims.aud) then
+        return {
             status = 401,
-            message = "aud in claims is inconsistent with client id in header"
+            message = "Client id is not equal to or present in aud claim"
         }
     end
 end

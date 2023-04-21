@@ -1,6 +1,5 @@
 local cjson = require("cjson")
 local constants = require "kong.constants"
-local decode_base64 = ngx.decode_base64
 
 local M = {}
 
@@ -267,70 +266,6 @@ function M.table_stringfy(tbl, indent)
     end
     s = s .. string.rep("  ", indent) .. "}\n"
     return s
-end
-
---- Tokenize a string by delimiter
--- Used to separate the header, claims and signature part of a JWT
--- @param str String to tokenize
--- @param div Delimiter
--- @param len Number of parts to retrieve
--- @return A table of strings
-function M.tokenize(str, div, len)
-    local result, pos = {}, 0
-
-    local iter = function()
-        return string.find(str, div, pos, true)
-    end
-
-    for st, sp in iter do
-        result[#result + 1] = string.sub(str, pos, st - 1)
-        pos = sp + 1
-        len = len - 1
-        if len <= 1 then
-            break
-        end
-    end
-
-    result[#result + 1] = string.sub(str, pos)
-    return result
-end
-
---- base 64 decode
--- @param input String to base64 decode
--- @return Base64 decoded string
-local function base64_decode(input)
-    local remainder = #input % 4
-
-    if remainder > 0 then
-        local padlen = 4 - remainder
-        input = input .. string.rep("=", padlen)
-    end
-
-    input = input:gsub("-", "+"):gsub("_", "/")
-    return decode_base64(input)
-end
-
-function M.decode_jwt(token)
-    local header_64, claims_64, signature_64 = unpack(M.tokenize(token, ".", 3))
-    local ok, header, claims, signature = pcall(function()
-        return cjson.decode(base64_decode(header_64)), cjson.decode(base64_decode(claims_64)),
-            base64_decode(signature_64)
-    end)
-    if not ok then
-        return nil, "invalid JSON"
-    end
-    if not claims then
-        return nil, "invalid claims"
-    end
-    return {
-        token = token,
-        header_64 = header_64,
-        claims_64 = claims_64,
-        signature_64 = signature_64,
-        header = header,
-        claims = claims,
-        signature = signature
-    }
 end
 
 return M
