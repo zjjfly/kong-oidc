@@ -89,7 +89,7 @@ end
 
 function check_token(token, client_id)
     local token_type = type(token)
-    print("token: ", token)
+    ngx.log(ngx.DEBUG, "token: ", token)
     local decoded, err = utils.decode_jwt()
     if err then
         return false, {
@@ -97,7 +97,7 @@ function check_token(token, client_id)
             message = "Bad token: " .. token
         }
     end
-    print("decoed token" .. utils.table_stringfy(decoded))
+    ngx.log(ngx.DEBUG, "decoed token" .. utils.table_stringfy(decoded))
     if token_type ~= "string" then
         if token_type == "nil" then
             return false, {
