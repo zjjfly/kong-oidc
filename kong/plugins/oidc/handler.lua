@@ -19,17 +19,15 @@ function OidcHandler:access(config)
 
     local client_id = kong.request.get_header(oidcConfig.client_arg)
     if (client_id == nil) then
-        return {
-            status = 401,
+        return kong.response.exit(401, {
             message = oidcConfig.client_arg .. "  not found in Headers"
-        }
+        })
     end
     local client_secret = oidcConfig.client_map[client_id]
     if (client_secret == nil) then
-        return {
-            status = 401,
+        return kong.response.exit(401, {
             message = "This client is not allowed"
-        }
+        })
     end
 
     if oidcConfig.skip_already_auth_requests then
@@ -37,13 +35,16 @@ function OidcHandler:access(config)
             local token, err = retrive_token()
             if err then
                 kong.log.err(err)
-                return {
-                    status = 500,
+                return kong.response.exit(500, {
                     message = "'Authorization' header is not a valid bearer token"
-                }
+                })
             end
-            check_token(token, client_id)
-
+            local ok, err = check_token(token, client_id)
+            if not ok then
+                return kong.response.exit(err.status, err.errors or {
+                    message = err.message
+                })
+            end
             ngx.log(ngx.DEBUG, "OidcHandler ignoring request with header 'authorization': " ..
                 kong.request.get_header("authorization"))
             return
