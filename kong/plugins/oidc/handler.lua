@@ -20,7 +20,7 @@ function OidcHandler:access(config)
     local client_id = kong.request.get_header(oidcConfig.client_arg)
     if (client_id == nil) then
         return kong.response.exit(401, {
-            message = oidcConfig.client_arg .. "  not found in Headers"
+            message = oidcConfig.client_arg .. " not found in Headers"
         })
     end
     local client_secret = oidcConfig.client_map[client_id]
@@ -32,7 +32,7 @@ function OidcHandler:access(config)
 
     if oidcConfig.skip_already_auth_requests then
         if kong.request.get_header("authorization") ~= null then
-            local token, err = retrive_token()
+            local token, err = retrieve_token()
             if err then
                 kong.log.err(err)
                 return kong.response.exit(500, {
