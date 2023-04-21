@@ -45,7 +45,7 @@ function M.get_redirect_uri(ngx)
 end
 
 function M.get_options(config, ngx)
-    map = {}
+    local map = {}
     client_id = config.client_id
     client_secret = config.client_secret
     for i, id in ipairs(client_id) do
@@ -241,6 +241,28 @@ function M.deepcopy(orig)
         copy = orig
     end
     return copy
+end
+
+-- Print contents of `tbl`, with indentation.
+-- `indent` sets the initial level of indentation.
+function M:table_stringfy(tbl, indent)
+    local s = ""
+    if not indent then
+        indent = 0
+    end
+    s = s .. string.rep("  ", indent) .. "{\n"
+    for k, v in pairs(tbl) do
+        formatting = string.rep("  ", indent + 1) .. k .. ": "
+        if type(v) == "table" then
+            s = s .. formatting .. tprint(v, indent + 1)
+        elseif type(v) == 'boolean' then
+            s = s .. formatting .. tostring(v)
+        else
+            s = s.. formatting .. v .. '\n'
+        end
+    end
+    s = s .. string.rep("  ", indent) .. "}\n"
+    return s
 end
 
 return M

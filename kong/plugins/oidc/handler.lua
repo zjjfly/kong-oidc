@@ -7,6 +7,8 @@ local utils = require("kong.plugins.oidc.utils")
 local filter = require("kong.plugins.oidc.filter")
 local session = require("kong.plugins.oidc.session")
 
+local re_gmatch = ngx.re.gmatch
+
 function OidcHandler:access(config)
     local oidcConfig = utils.get_options(config, ngx)
     -- partial support for plugin chaining: allow skipping requests, where higher priority
@@ -26,7 +28,7 @@ function OidcHandler:access(config)
     local client_secret = oidcConfig.client_map[client_id]
     if (client_secret == nil) then
         return kong.response.exit(401, {
-            message = "This client is not allowed"
+            message = "This client is not allowed: " .. client_id 
         })
     end
 
@@ -112,6 +114,7 @@ function check_token(token, client_id)
         }
     end
     local jwt_claims = jwt.claims
+    ngx.log(ngx.DEBUG, "JWT Claims: " .. utils.table_stringfy(jwt_claims))
     if jwt_claims.azq == nil then
         return {
             status = 401,
