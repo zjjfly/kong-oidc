@@ -89,7 +89,7 @@ end
 
 function check_token(token, client_id)
     local token_type = type(token)
-    ngx.log(ngx.DEBUG, "token: ", token)
+    ngx.log(ngx.DEBUG, "token: " .. token)
     local decoded, err = utils.decode_jwt()
     if err then
         return false, {
