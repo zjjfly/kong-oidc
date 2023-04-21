@@ -2,7 +2,9 @@ local OidcHandler = {
     VERSION = "1.3.0",
     PRIORITY = 1000
 }
-local jwt_decoder = require("kong.plugins.jwt.jwt_parser")
+
+local jwt_decoder = require "kong.plugins.jwt.jwt_parser"
+
 local utils = require("kong.plugins.oidc.utils")
 local filter = require("kong.plugins.oidc.filter")
 local session = require("kong.plugins.oidc.session")
@@ -113,8 +115,10 @@ function check_token(token, client_id)
             message = "Bad token; " .. tostring(err)
         }
     end
+    ngx.log(ngx.DEBUG, "JWT: " .. utils.table_stringfy(jwt))
+    ngx.log(ngx.DEBUG, "JWT header: " .. utils.table_stringfy(jwt.header))
+    ngx.log(ngx.DEBUG, "JWT claims: " .. utils.table_stringfy(jwtclaims))
     local jwt_claims = jwt.claims
-    ngx.log(ngx.DEBUG, "JWT Claims: " .. utils.table_stringfy(jwt_claims))
     if jwt_claims.azq == nil then
         return {
             status = 401,
