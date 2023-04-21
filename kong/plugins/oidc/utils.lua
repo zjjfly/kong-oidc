@@ -46,8 +46,8 @@ end
 
 function M.get_options(config, ngx)
     local map = {}
-    client_id = config.client_id
-    client_secret = config.client_secret
+    local client_id = config.client_id
+    local client_secret = config.client_secret
     for i, id in ipairs(client_id) do
         local secret = client_secret[i]
         if (not (secret == nil)) then
@@ -246,6 +246,9 @@ end
 -- Print contents of `tbl`, with indentation.
 -- `indent` sets the initial level of indentation.
 function M:table_stringfy(tbl, indent)
+    if tbl == nil then
+        return "null"
+    end
     local s = ""
     if not indent then
         indent = 0
