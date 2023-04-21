@@ -246,7 +246,7 @@ end
 
 -- Print contents of `tbl`, with indentation.
 -- `indent` sets the initial level of indentation.
-function M:table_stringfy(tbl, indent)
+function M.table_stringfy(tbl, indent)
     if tbl == nil then
         return "null"
     end
@@ -258,7 +258,7 @@ function M:table_stringfy(tbl, indent)
     for k, v in pairs(tbl) do
         formatting = string.rep("  ", indent + 1) .. k .. ": "
         if type(v) == "table" then
-            s = s .. formatting .. M:table_stringfy(v, indent + 1)
+            s = s .. formatting .. M.table_stringfy(v, indent + 1)
         elseif type(v) == 'boolean' then
             s = s .. formatting .. tostring(v)
         else
@@ -275,7 +275,7 @@ end
 -- @param div Delimiter
 -- @param len Number of parts to retrieve
 -- @return A table of strings
-function M:tokenize(str, div, len)
+function M.tokenize(str, div, len)
     local result, pos = {}, 0
 
     local iter = function()
@@ -310,8 +310,8 @@ local function base64_decode(input)
     return decode_base64(input)
 end
 
-function M:decode_jwt(token)
-    local header_64, claims_64, signature_64 = unpack(M:tokenize(token, ".", 3))
+function M.decode_jwt(token)
+    local header_64, claims_64, signature_64 = unpack(M.tokenize(token, ".", 3))
     local ok, header, claims, signature = pcall(function()
         return cjson.decode(base64_decode(header_64)), cjson.decode(base64_decode(claims_64)),
             base64_decode(signature_64)

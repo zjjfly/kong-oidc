@@ -89,7 +89,6 @@ end
 
 function check_token(token, client_id)
     local token_type = type(token)
-    ngx.log(ngx.DEBUG, "token: " .. token)
     if token_type ~= "string" then
         if token_type == "nil" then
             return false, {
