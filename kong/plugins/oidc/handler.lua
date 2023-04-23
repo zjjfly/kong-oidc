@@ -49,13 +49,13 @@ function handle(oidcConfig)
     local response
 
     if oidcConfig.bearer_jwt_auth_enable then
-        response, err = verify_bearer_jwt(oidcConfig)
-        if response then
-            utils.setCredentials(response)
-            utils.injectGroups(response, oidcConfig.groups_claim)
-            utils.injectHeaders(oidcConfig.header_names, oidcConfig.header_claims, {response})
+        local resp, err = verify_bearer_jwt(oidcConfig)
+        if resp then
+            utils.setCredentials(resp)
+            utils.injectGroups(resp, oidcConfig.groups_claim)
+            utils.injectHeaders(oidcConfig.header_names, oidcConfig.header_claims, {resp})
             if not oidcConfig.disable_userinfo_header then
-                utils.injectUser(response, oidcConfig.userinfo_header_name)
+                utils.injectUser(resp, oidcConfig.userinfo_header_name)
             end
             return
         end
