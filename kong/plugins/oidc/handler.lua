@@ -35,7 +35,7 @@ function OidcHandler:access(config)
     end
 
     if oidcConfig.skip_already_auth_requests then
-        if kong.request.get_header("authorization") ~= null then
+        if kong.request.get_header("authorization") then
             local token, err = retrieve_token()
             if err then
                 kong.log.err(err)
@@ -70,20 +70,18 @@ end
 
 function retrieve_token()
     local authorization_header = kong.request.get_header("authorization")
-    if authorization_header then
-        local iterator, iter_err = re_gmatch(authorization_header, "\\s*[Bb]earer\\s+(.+)")
-        if not iterator then
-            return nil, iter_err
-        end
+    local iterator, iter_err = re_gmatch(authorization_header, "\\s*[Bb]earer\\s+(.+)")
+    if not iterator then
+        return nil, iter_err
+    end
 
-        local m, err = iterator()
-        if err then
-            return nil, err
-        end
+    local m, err = iterator()
+    if err then
+        return nil, err
+    end
 
-        if m and #m > 0 then
-            return m[1]
-        end
+    if m and #m > 0 then
+        return m[1]
     end
 end
 
