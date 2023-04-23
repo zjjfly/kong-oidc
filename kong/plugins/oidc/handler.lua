@@ -65,6 +65,7 @@ function OidcHandler:access(config)
         ngx.log(ngx.DEBUG, "OidcHandler ignoring request, path: " .. ngx.var.request_uri)
     end
 
+    ngx.log(ngx.DEBUG,"acess code: " .. kong.request.get_header("authorization"))
     ngx.log(ngx.DEBUG, "OidcHandler done")
 end
 

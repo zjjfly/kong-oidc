@@ -139,6 +139,7 @@ local function set_consumer(consumer, credential)
 end
 
 function M.injectAccessToken(accessToken, headerName, bearerToken)
+    ngx.log(ngx.DEBUG, "acess code in resp: " .. accessToken)
     ngx.log(ngx.DEBUG, "Injecting " .. headerName)
     local token = accessToken
     if (bearerToken) then
