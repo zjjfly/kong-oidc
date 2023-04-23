@@ -144,7 +144,6 @@ function M.injectAccessToken(accessToken, headerName, bearerToken)
     if (bearerToken) then
         token = formatAsBearerToken(token)
     end
-    ngx.log(ngx.DEBUG,"acess code: " .. token)
     kong.service.request.set_header(headerName, token)
 end
 
