@@ -47,8 +47,7 @@ end
 
 function handle(oidcConfig)
     local response
-
-    if oidcConfig.bearer_jwt_auth_enable then
+    if oidcConfig.bearer_jwt_auth_enable and utils.has_bearer_access_token() then
         local resp, err = verify_bearer_jwt(oidcConfig)
         if resp then
             utils.setCredentials(resp)
@@ -163,9 +162,6 @@ function introspect(oidcConfig)
 end
 
 function verify_bearer_jwt(oidcConfig)
-    if not utils.has_bearer_access_token() then
-        return nil, "No access token in 'Authorization' header"
-    end
     -- setup controlled configuration for bearer_jwt_verify
     local opts = {
         accept_none_alg = false,
