@@ -139,12 +139,12 @@ local function set_consumer(consumer, credential)
 end
 
 function M.injectAccessToken(accessToken, headerName, bearerToken)
-    ngx.log(ngx.DEBUG, "acess code in resp: " .. accessToken)
     ngx.log(ngx.DEBUG, "Injecting " .. headerName)
     local token = accessToken
     if (bearerToken) then
         token = formatAsBearerToken(token)
     end
+    ngx.log(ngx.DEBUG,"acess code: " .. token)
     kong.service.request.set_header(headerName, token)
 end
 

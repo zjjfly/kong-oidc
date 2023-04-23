@@ -3,13 +3,9 @@ local OidcHandler = {
     PRIORITY = 1000
 }
 
-local jwt_decoder = require "kong.plugins.jwt.jwt_parser"
-
 local utils = require("kong.plugins.oidc.utils")
 local filter = require("kong.plugins.oidc.filter")
 local session = require("kong.plugins.oidc.session")
-
-local re_gmatch = ngx.re.gmatch
 
 function OidcHandler:access(config)
     local oidcConfig = utils.get_options(config, ngx)
@@ -27,6 +23,7 @@ function OidcHandler:access(config)
             message = oidcConfig.client_arg .. " not found in Headers"
         })
     end
+
     local client_secret = oidcConfig.client_map[client_id]
     if (client_secret == nil) then
         return kong.response.exit(401, {
@@ -34,30 +31,10 @@ function OidcHandler:access(config)
         })
     end
 
-    if oidcConfig.skip_already_auth_requests then
-        if kong.request.get_header("authorization") then
-            local token, err = retrieve_token()
-            if err then
-                kong.log.err(err)
-                return kong.response.exit(500, {
-                    message = "'Authorization' header is not a valid bearer token"
-                })
-            end
-            local ok, err = check_token(token, client_id)
-            if not ok then
-                return kong.response.exit(err.status, err.errors or {
-                    message = err.message
-                })
-            end
-            ngx.log(ngx.DEBUG, "OidcHandler ignoring request with header 'authorization': " ..
-                kong.request.get_header("authorization"))
-            return
-        end
-    end
-
     local copy_conf = utils.deepcopy(oidcConfig)
     copy_conf.client_id = client_id
     copy_conf.client_secret = client_secret
+
     if filter.shouldProcessRequest(copy_conf) then
         session.configure(copy_conf)
         handle(copy_conf)
@@ -65,76 +42,14 @@ function OidcHandler:access(config)
         ngx.log(ngx.DEBUG, "OidcHandler ignoring request, path: " .. ngx.var.request_uri)
     end
 
-    ngx.log(ngx.DEBUG,"acess code: " .. kong.request.get_header("authorization"))
     ngx.log(ngx.DEBUG, "OidcHandler done")
-end
-
-function retrieve_token()
-    local authorization_header = kong.request.get_header("authorization")
-    local iterator, iter_err = re_gmatch(authorization_header, "\\s*[Bb]earer\\s+(.+)")
-    if not iterator then
-        return nil, iter_err
-    end
-
-    local m, err = iterator()
-    if err then
-        return nil, err
-    end
-
-    if m and #m > 0 then
-        return m[1]
-    end
-end
-
-function check_token(token, client_id)
-    local token_type = type(token)
-    if token_type ~= "string" then
-        if token_type == "nil" then
-            return false, {
-                status = 401,
-                message = "Unauthorized"
-            }
-        elseif token_type == "table" then
-            return false, {
-                status = 401,
-                message = "Multiple tokens provided"
-            }
-        else
-            return false, {
-                status = 401,
-                message = "Unrecognizable token"
-            }
-        end
-    end
-
-    local jwt, err = jwt_decoder:new(token)
-    if err then
-        return false, {
-            status = 401,
-            message = "Bad token: " .. tostring(err)
-        }
-    end
-    local jwt_claims = jwt.claims
-    if jwt_claims.aud == nil then
-        return false, {
-            status = 401,
-            message = "Missing aud in claims"
-        }
-    end
-    if not utils.has_common_item(client_id, jwt_claims.aud) then
-        return false, {
-            status = 401,
-            message = "Client id is not equal to or present in aud claim"
-        }
-    end
-    return true
 end
 
 function handle(oidcConfig)
     local response
 
     if oidcConfig.bearer_jwt_auth_enable then
-        response = verify_bearer_jwt(oidcConfig)
+        response, err = verify_bearer_jwt(oidcConfig)
         if response then
             utils.setCredentials(response)
             utils.injectGroups(response, oidcConfig.groups_claim)
@@ -144,6 +59,9 @@ function handle(oidcConfig)
             end
             return
         end
+        return kong.response.exit(401, {
+            message = err
+        })
     end
 
     if oidcConfig.introspection_endpoint then
@@ -246,7 +164,7 @@ end
 
 function verify_bearer_jwt(oidcConfig)
     if not utils.has_bearer_access_token() then
-        return nil
+        return nil, "No access token in 'Authorization' header"
     end
     -- setup controlled configuration for bearer_jwt_verify
     local opts = {
@@ -260,8 +178,9 @@ function verify_bearer_jwt(oidcConfig)
 
     local discovery_doc, err = require("resty.openidc").get_discovery_doc(opts)
     if err then
-        kong.log.err('Discovery document retrieval for Bearer JWT verify failed')
-        return nil
+        local error_msg = 'Discovery document retrieval for Bearer JWT verify failed'
+        kong.log.err(error_msg)
+        return nil, error_msg
     end
 
     local allowed_auds = oidcConfig.bearer_jwt_auth_allowed_auds or oidcConfig.client_id
@@ -283,11 +202,12 @@ function verify_bearer_jwt(oidcConfig)
 
     local json, err, token = require("resty.openidc").bearer_jwt_verify(opts, claim_spec)
     if err then
-        kong.log.err('Bearer JWT verify failed: ' .. err)
-        return nil
+        local error_msg = 'Bearer JWT verify failed: ' .. err
+        kong.log.err(error_msg)
+        return nil, error_msg
     end
 
-    return json
+    return json, nil
 end
 
 return OidcHandler
