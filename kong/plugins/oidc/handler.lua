@@ -12,6 +12,15 @@ function OidcHandler:access(config)
     -- partial support for plugin chaining: allow skipping requests, where higher priority
     -- plugin has already set the credentials. The 'config.anomyous' approach to define
     -- "and/or" relationship between auth plugins is not utilized
+
+    -- bypass preflight request if needed
+    if kong.request.get_method() == "OPTIONS" and kong.request.get_header("Origin") and
+        kong.request.get_header("Access-Control-Request-Method") then
+        if oidcConfig.bypass_preflight_request then
+            return
+        end
+    end
+
     if oidcConfig.skip_already_auth_requests and kong.client.get_credential() then
         ngx.log(ngx.DEBUG, "OidcHandler ignoring already auth request: " .. ngx.var.request_uri)
         return

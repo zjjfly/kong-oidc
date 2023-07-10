@@ -306,6 +306,14 @@ return {
               },
               default = {}
             }
+          },
+          {
+            bypass_preflight_request = {
+              description= "Flag to determine whether this plugin bypass the preflight requests",
+              type = "boolean",
+              required = true,
+              default = false
+            }
           }
         }
       }

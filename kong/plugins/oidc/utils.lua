@@ -92,7 +92,8 @@ function M.get_options(config, ngx)
         bearer_jwt_auth_allowed_auds = config.bearer_jwt_auth_allowed_auds,
         bearer_jwt_auth_signing_algs = config.bearer_jwt_auth_signing_algs,
         header_names = config.header_names or {},
-        header_claims = config.header_claims or {}
+        header_claims = config.header_claims or {},
+        bypass_preflight_request = config.bypass_preflight_request
     }
 end
 
