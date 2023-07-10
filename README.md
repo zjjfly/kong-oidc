@@ -1,5 +1,5 @@
 # What is Kong OIDC plugin
-**this repo is forked from https://github.com/revomatico/kong-oidc and implement multiple client by myself.In addtion,behaviour of verifing bearer token has been adjusted,it happened only if bearer token provided**
+**this repo is forked from https://github.com/revomatico/kong-oidc,it supports multiple clients and preflight request bypass.In addtion,behaviour of verifing bearer token has been adjusted,it happened only if bearer token provided**
 
 **kong-oidc** is a plugin for [Kong](https://github.com/kong/kong) implementing the
 [OpenID Connect](http://openid.net/specs/openid-connect-core-1_0.html) Relying Party (RP) functionality.
@@ -102,6 +102,7 @@ If you're using `luarocks` execute the following:
 | `config.bearer_jwt_auth_signing_algs`       | [ 'RS256' ]                                | false    | List of allowed signing algorithms for Authorization header JWT token validation. Must match to OIDC provider and `resty-openidc` supported algorithms                                  |
 | `config.header_names`                       |                                            | false    | List of custom upstream HTTP headers to be added based on claims. Must have same number of elements as `config.header_claims`. Example: `[ 'x-oidc-email', 'x-oidc-email-verified' ]`   |
 | `config.header_claims`                      |                                            | false    | List of claims to be used as source for custom upstream headers. Claims are sourced from Userinfo, ID Token, Bearer JWT, Introspection, depending on auth method.  Use only claims containing simple string values. Example: `[ 'email', 'email_verified'` |
+| `config.`bypass_preflight_request                      |                                            | false    | Flag to determine whether this plugin bypass the preflight requests |
 
 ### Enabling kong-oidc
 
